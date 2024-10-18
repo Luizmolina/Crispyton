@@ -1,9 +1,6 @@
 let encryptionKey;
 let resultDiv; // Div para exibir os resultados
 let aValues = []; // Array para armazenar valores de 'a'
-let encryptedInputField, positionsInputField; // Campos de texto para inserir os dados de decriptação
-let decryptSection; // Div que vai conter os inputs de decriptação
-let decryptButtonAction; // Botão de descriptografar
 
 // Função para gerar a chave de criptografia
 function generateRandomizedEncryptionKey() {
@@ -23,10 +20,13 @@ function generateRandomizedEncryptionKey() {
 
     // Atribuindo um valor aleatório para 'a' entre 6 e 100
     aValues = []; // Limpar a lista anterior de valores para 'a'
-    for (let i = 0; i < 10; i++) { // Gerar 10 valores aleatórios para 'a'
-        aValues.push(generateRandomValue(usedValues));
-    }
-    encryptionKey['a'] = aValues[0]; // Usar o primeiro valor para 'a'
+    let aValue;
+    do {
+        aValue = generateRandomValue(usedValues); // Gera um valor aleatório para 'a'
+    } while (aValue >= 6 && aValue <= 100 && usedValues.has(aValue)); // Garante que não é usado
+
+    encryptionKey['a'] = aValue; // Usar o valor gerado para 'a'
+    usedValues.add(aValue); // Adiciona o valor de 'a' aos valores usados
 
     // Atribuindo um valor para o espaço
     encryptionKey[' '] = 0; // Espaço representado por 0
@@ -46,87 +46,53 @@ function generateRandomValue(usedValues) {
 // Função para criptografar uma palavra
 function encryptWord(word, encryptionKey) {
     let encryptedWord = [];
-    let positions = []; // Array para guardar a posição original de cada número
-
     word = word.toLowerCase(); // Convertendo a palavra para minúsculas
-    for (let i = 0; i < word.length; i++) {
-        let char = word[i];
+    for (let char of word) {
         if (encryptionKey[char] !== undefined) { // Verifica se a letra ou espaço está na chave
-            encryptedWord.push(encryptionKey[char]);
-            positions.push(i); // Guardar a posição original do caractere
+            encryptedWord.push(encryptionKey[char]); // Usar o valor definido na chave
         }
     }
-
-    // Embaralhar os números criptografados junto com as posições
-    let combined = encryptedWord.map((num, index) => ({ num, pos: positions[index] }));
-    combined.sort(() => Math.random() - 0.5); // Embaralhar os números e as posições
-
-    // Separar os arrays novamente após o embaralhamento
-    encryptedWord = combined.map(item => item.num);
-    positions = combined.map(item => item.pos);
-
-    return { encryptedWord, positions }; // Retornar a lista embaralhada de números e as posições
+    return encryptedWord;
 }
 
 // Função para quebrar a criptografia
-function decryptWord(encryptedNumbers, positions, encryptionKey) {
+function decryptWord(encryptedNumbers, encryptionKey) {
     // Invertendo a chave de criptografia
     let reversedKey = Object.fromEntries(Object.entries(encryptionKey).map(([key, value]) => [value, key]));
-    let decryptedArray = new Array(positions.length); // Array vazio para reconstruir a palavra original
+    let decryptedWord = '';
 
-    for (let i = 0; i < encryptedNumbers.length; i++) {
-        let num = encryptedNumbers[i];
-        let pos = positions[i];
-        if (aValues.includes(num)) {
-            decryptedArray[pos] = 'a'; // Retorna 'a' se o número estiver na lista de valores de 'a'
+    for (let num of encryptedNumbers) {
+        if (num >= 6 && num <= 100 && !Object.values(encryptionKey).includes(num)) {
+            decryptedWord += 'a'; // Retorna 'a' se o número estiver na faixa de 6 a 100 e não representar outra letra
         } else if (reversedKey[num] !== undefined) {
-            decryptedArray[pos] = reversedKey[num];
+            decryptedWord += reversedKey[num];
         } else {
-            decryptedArray[pos] = '?'; // Adiciona '?' se o número não tiver correspondência
+            decryptedWord += '?'; // Adiciona '?' se o número não tiver correspondência
         }
     }
-    return decryptedArray.join(''); // Retornar a palavra reconstruída
+    return decryptedWord;
 }
 
 // Função para criptografar a palavra
 function encryptInput() {
     let word = prompt("Digite uma palavra para criptografar:");
     if (word) {
-        let { encryptedWord, positions } = encryptWord(word, encryptionKey);
-        resultDiv.html("Palavra Criptografada: " + encryptedWord.join(', ') + "<br>Posições: " + positions.join(', ')); // Exibe os números e as posições
+        let encryptedWord = encryptWord(word, encryptionKey);
+        resultDiv.html("Palavra Criptografada: " + encryptedWord.join(', ')); // Exibe a lista de números
     } else {
         resultDiv.html("Nenhuma palavra foi inserida.");
     }
 }
 
-// Função para quebrar a criptografia com campos de entrada
+// Função para quebrar a criptografia
 function decryptInput() {
-    // Mostrar os campos para inserir os números e as posições
-    decryptSection.show();
-
-    // Se o botão "Descriptografar" já foi criado, não recriar
-    if (!decryptButtonAction) {
-        decryptButtonAction = createButton('Descriptografar');
-        decryptButtonAction.position(50, 350); // Botão mais abaixo e alinhado à esquerda
-        decryptButtonAction.mousePressed(() => {
-            let encryptedInput = encryptedInputField.value();
-            let positionsInput = positionsInputField.value();
-
-            if (encryptedInput && positionsInput) {
-                let encryptedNumbers = encryptedInput.split(',').map(Number);
-                let positions = positionsInput.split(',').map(Number);
-
-                // Verificar se os números e posições são válidos
-                if (encryptedNumbers.length === positions.length) {
-                    let decryptedWord = decryptWord(encryptedNumbers, positions, encryptionKey);
-                    resultDiv.html("Palavra Decryptografada: " + decryptedWord);
-                } else {
-                    resultDiv.html("Erro: O número de posições não corresponde ao número de valores criptografados.");
-                }
-            } else {
-                resultDiv.html("Insira os valores e posições corretamente.");
-            }
-        });
+    let encryptedInput = prompt("Digite os números criptografados separados por vírgula:");
+    if (encryptedInput) {
+        let encryptedNumbers = encryptedInput.split(',').map(Number);
+        let decryptedWord = decryptWord(encryptedNumbers, encryptionKey);
+        resultDiv.html("Palavra Decryptografada: " + decryptedWord);
+    } else {
+        resultDiv.html("Nenhuma sequência foi inserida.");
     }
 }
 
@@ -146,21 +112,8 @@ function setup() {
     decryptButton.position(200, 100);
     decryptButton.mousePressed(decryptInput); // Ação ao clicar
 
-    // Criar seção escondida para inputs de decriptação
-    decryptSection = createDiv('');
-    decryptSection.position(50, 150);
-    decryptSection.hide(); // Escondido inicialmente
-
-    createP('Digite os números criptografados:').parent(decryptSection);
-    encryptedInputField = createInput('');
-    encryptedInputField.parent(decryptSection);
-
-    createP('Digite as posições respectivas:').parent(decryptSection);
-    positionsInputField = createInput('');
-    positionsInputField.parent(decryptSection);
-
     // Criar div para exibir resultados
     resultDiv = createDiv('');
-    resultDiv.position(50, 400); // Posiciona logo abaixo dos botões
+    resultDiv.position(50, 130); // Posiciona logo abaixo dos botões
     resultDiv.style('font-size', '16px'); // Estilo do texto
 }
