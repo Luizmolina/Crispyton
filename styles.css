@@ -1,0 +1,58 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9; /* Fundo suave */
+    color: #333; /* Texto escuro */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Para ocupar toda a altura da tela */
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #4A90E2; /* Cor do título */
+}
+
+button {
+    background-color: #4CAF50; /* Cor verde */
+    color: white; /* Texto branco */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 10px; /* Margem entre os botões */
+    cursor: pointer; /* Mão ao passar o mouse */
+    font-size: 16px;
+    transition: background-color 0.3s; /* Efeito de transição */
+}
+
+button:hover {
+    background-color: #45a049; /* Cor ao passar o mouse */
+}
+
+input {
+    padding: 10px;
+    margin: 10px 0; /* Margem acima e abaixo do input */
+    border: 1px solid #ccc; /* Borda leve */
+    border-radius: 5px;
+    width: 100%; /* Largura total */
+    max-width: 300px; /* Largura máxima para manter o layout */
+}
+
+div {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #fff; /* Fundo branco para resultados */
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra leve */
+    max-width: 400px; /* Largura máxima para manter o layout */
+    text-align: center; /* Centraliza o texto */
+}
